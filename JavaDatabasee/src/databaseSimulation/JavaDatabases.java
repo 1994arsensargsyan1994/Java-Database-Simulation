@@ -27,16 +27,18 @@ public class JavaDatabases {
     void selectCommandDB(String commandGeneral) {
         String[] commandArray = commandGeneral.split(" ");
         String commandShow = commandArray[0];
+      int length  =commandArray.length;
         if (commandShow.equals("exit")){
             System.exit(0);
         }
         switch (commandShow) {
             case "CREATE": {
-                if (commandArray.length == 3) {
+                if (length == 3) {
                     String command = commandArray[1];
                     if (command.equals("DATABASE")) {
                         String name = commandArray[2];
                         createDB(name);
+                        System.out.println("you create "+name+ " database");
                         break;
                     } else
                         System.out.println("wrong command");
@@ -48,7 +50,7 @@ public class JavaDatabases {
             }
             case "SHOW": {
                 String command = commandArray[1];
-                if (commandArray.length == 2) {
+                if (length == 2) {
                     if (command.equals("DATABASES")) {
                         showDatabases(command);
                         break;
@@ -62,10 +64,20 @@ public class JavaDatabases {
             }
             case "USE": {
                 String nameDb = commandArray[1];
-                if (commandArray.length == 2) {
+                if (length == 2) {
                     useDb(nameDb);
                     break;
                 } else {
+                    System.out.println("wrong command");
+                }
+                break;
+            }
+            case "DROP":{
+                if (length == 3 && commandArray[1].equals("DATABASE")){
+                    String nameDB = commandArray[2];
+                    dropDB(nameDB);
+                    break;
+                }else {
                     System.out.println("wrong command");
                 }
                 break;
@@ -139,6 +151,7 @@ public class JavaDatabases {
             }
             case "PREVIOUS": {
                 if (length == 1) {
+                    System.out.println("you dan previous");
                     commands();
                     break;
                 } else {
@@ -162,25 +175,29 @@ public class JavaDatabases {
                 }
                 break;
             }
+            case "DROP":{
+                if (length == 3){
+                    String nameTable = commandArray[2];
+                    if (commandArray[1].equals("TABLE")){
+                        dropTable(path,nameTable);
+                        break;
+                    }
+                    else if (commandArray[1].equals("DATABASE")){
+                        System.out.println("SELECT < PREVIOUS> for this command");
+                        break;
+                    }
+                }else {
+                    System.out.println("wrong command");
+                }
+                break;
+            }
             default: {
                 System.out.println("wrong command");
             }
         }
     }
 
-    private void createTable(File file, String parameters) {
-        String temp = parameters.substring(1, parameters.length() - 1);
-        String[] parametersArray = temp.split(",");
-        try (BufferedWriter bWrit = new BufferedWriter(new FileWriter(file))) {
-            bWrit.write("  ");
-            for (String s : parametersArray) {
-                bWrit.write(s + "\t");
-            }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     void showTables(String path) {
         File database = new File(path);
@@ -212,5 +229,44 @@ public class JavaDatabases {
     void createDB(String name) {
         File database = new File(SERVER_DB, name);
         database.mkdir();
+    }
+    private void createTable(File file, String parameters) {
+        String temp = parameters.substring(1, parameters.length() - 1);
+        String[] parametersArray = temp.split(",");
+        try (BufferedWriter bWrit = new BufferedWriter(new FileWriter(file))) {
+            bWrit.write("  ");
+            for (String s : parametersArray) {
+                bWrit.write(s + "\t");
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void dropDB(String nameDB){
+        File database = new File(SERVER_DB+File.separator+nameDB);
+        if (database.isDirectory() && database.exists()){
+            database.delete();
+            System.out.println("you drop "+nameDB+ " database");
+        }else {
+            System.out.println("not that database");
+        }
+    }
+    void dropTable(String path,String nameTable){
+        File database = new File(path);
+        File [] tables = database.listFiles();
+        if (tables == null){
+            System.out.println("not any tables");
+            return;
+        }
+        for (File table : tables) {
+            if (table.getName().equals(nameTable)){
+                table.delete();
+                System.out.println("you drop "+nameTable + " table");
+                return;
+            }
+        }
+        System.out.println("not that name table");
     }
 }
